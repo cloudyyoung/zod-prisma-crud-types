@@ -1,5 +1,6 @@
 import { z } from 'zod'
-import { JsonSchema } from './utils'
+import * as utils from './utils'
+import * as enums from './enums'
 
 export const CourseCreateSchema = z.object({
   cid: z.string(),
@@ -14,20 +15,23 @@ export const CourseCreateSchema = z.object({
   units: z.number(),
   aka: z.string().nullish().optional(),
   prereq: z.string().nullish().optional(),
-  prereq_json: JsonSchema.optional(),
+  prereq_json: utils.JsonSchema.optional(),
   coreq: z.string().nullish().optional(),
-  coreq_json: JsonSchema.optional(),
+  coreq_json: utils.JsonSchema.optional(),
   antireq: z.string().nullish().optional(),
-  antireq_json: JsonSchema.optional(),
+  antireq_json: utils.JsonSchema.optional(),
   is_active: z.boolean(),
   is_multi_term: z.boolean(),
   is_nogpa: z.boolean(),
   is_repeatable: z.boolean(),
+  components: z.array(enums.CourseComponentEnum),
   course_group_id: z.string(),
   coursedog_id: z.string(),
   course_created_at: z.date(),
   course_effective_start_date: z.date(),
   course_last_updated_at: z.date(),
+  career: enums.CareerEnum,
+  grade_mode: enums.GradeModeEnum,
 })
 
 export type CourseCreate = z.infer<typeof CourseCreateSchema>

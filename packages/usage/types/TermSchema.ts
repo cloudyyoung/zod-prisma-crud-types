@@ -1,9 +1,11 @@
 import { z } from 'zod'
-import { JsonSchema } from './utils'
+import * as utils from './utils'
+import * as enums from './enums'
 
 export const TermCreateSchema = z.object({
   term_id: z.string(),
   year: z.number(),
+  name: enums.TermNameEnum,
 })
 
 export type TermCreate = z.infer<typeof TermCreateSchema>

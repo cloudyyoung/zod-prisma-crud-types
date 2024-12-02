@@ -19,7 +19,7 @@ const { version } = require('../package.json');
         };
     },
     onGenerate: async (options) => {
-        var _a, _b;
+        var _a, _b, _c;
         const config = options.generator.config;
         const ignoredFieldNamesString = config.ignoredFieldNames || '';
         const ignoredFieldNames = ignoredFieldNamesString
@@ -38,6 +38,9 @@ const { version } = require('../package.json');
         const utilsLocation = path_1.default.join((_b = options.generator.output) === null || _b === void 0 ? void 0 : _b.value, `utils.ts`);
         const utilsContent = getUtilsContent();
         await (0, writeFileSafely_1.writeFileSafely)(utilsLocation, utilsContent);
+        const enumsLocation = path_1.default.join((_c = options.generator.output) === null || _c === void 0 ? void 0 : _c.value, `enums.ts`);
+        const enumsContent = getEnumsContent(options.dmmf.datamodel.enums);
+        await (0, writeFileSafely_1.writeFileSafely)(enumsLocation, enumsContent);
     },
 });
 const getZodFieldType = (field) => {
@@ -58,17 +61,21 @@ const getZodFieldType = (field) => {
             case 'Int':
                 return 'z.number()';
             case 'Json':
-                return 'JsonSchema';
+                return 'utils.JsonSchema';
             case 'String':
                 return 'z.string()';
             default:
                 return 'z.unknown()';
         }
     };
-    if (field.isList) {
-        return `z.array(${getType(field.type)})`;
+    let zodType = getType(field.type);
+    if (field.kind === 'enum') {
+        zodType = `enums.${field.type}Enum`;
     }
-    return getType(field.type);
+    if (field.isList) {
+        zodType = `z.array(${zodType})`;
+    }
+    return zodType;
 };
 const getZodOptional = (field) => {
     if (!field.isRequired && field.type === 'Json') {
@@ -78,7 +85,7 @@ const getZodOptional = (field) => {
 };
 const isIgnoredField = (field, ignoredFieldNames) => {
     return (ignoredFieldNames.includes(field.name) ||
-        field.kind !== 'scalar' ||
+        (field.kind !== 'scalar' && field.kind !== 'enum') ||
         field.isId);
 };
 const getZodField = (field) => {
@@ -90,7 +97,8 @@ const getZodSchema = (model, ignoredFieldNames) => {
         .map(getZodField);
     return `
   import { z } from 'zod';
-  import { JsonSchema } from './utils';
+  import * as utils from './utils';
+  import * as enums from './enums';
 
   export const ${model.name}CreateSchema = z.object({
     ${fields}
@@ -109,7 +117,9 @@ const getIndexContent = (models) => {
         return `export * from './${model.name}Schema'`;
     })
         .join('\n') +
+        '\n' +
         `
+    export * from './enums'
     export * from './utils'
     `);
 };
@@ -121,6 +131,20 @@ const getUtilsContent = () => {
     export type Literal = z.infer<typeof LiteralSchema>
     export const JsonSchema: z.ZodType = z.lazy(() => z.union([LiteralSchema, z.array(JsonSchema), z.record(JsonSchema)]))
     export type Json = z.infer<typeof JsonSchema>
+  `;
+};
+const getEnumsContent = (enums) => {
+    return `
+    import { z } from 'zod'
+
+    ${enums.map(getZodEnum).join('\n')}
+  `;
+};
+const getZodEnum = (em) => {
+    return `
+  export const ${em.name}Enum = z.enum([${em.values.map((v) => `'${v.name}'`)}]);
+
+  export type ${em.name} = z.infer<typeof ${em.name}Enum>;
   `;
 };
 //# sourceMappingURL=generator.js.map

@@ -34,7 +34,6 @@ generatorHandler({
       const content = getZodSchema(model, ignoredFieldNames)
       return writeFileSafely(schemaLocation, content)
     })
-
     await Promise.all(promises)
 
     const indexLocation = path.join(
@@ -50,6 +49,13 @@ generatorHandler({
     )
     const utilsContent = getUtilsContent()
     await writeFileSafely(utilsLocation, utilsContent)
+
+    const enumsLocation = path.join(
+      options.generator.output?.value!,
+      `enums.ts`,
+    )
+    const enumsContent = getEnumsContent(options.dmmf.datamodel.enums)
+    await writeFileSafely(enumsLocation, enumsContent)
   },
 })
 
@@ -71,7 +77,7 @@ const getZodFieldType = (field: DMMF.Field) => {
       case 'Int':
         return 'z.number()'
       case 'Json':
-        return 'JsonSchema'
+        return 'utils.JsonSchema'
       case 'String':
         return 'z.string()'
       default:
@@ -79,10 +85,17 @@ const getZodFieldType = (field: DMMF.Field) => {
     }
   }
 
-  if (field.isList) {
-    return `z.array(${getType(field.type)})`
+  let zodType = getType(field.type)
+
+  if (field.kind === 'enum') {
+    zodType = `enums.${field.type}Enum`
   }
-  return getType(field.type)
+
+  if (field.isList) {
+    zodType = `z.array(${zodType})`
+  }
+
+  return zodType
 }
 
 const getZodOptional = (field: DMMF.Field) => {
@@ -96,7 +109,7 @@ const getZodOptional = (field: DMMF.Field) => {
 const isIgnoredField = (field: DMMF.Field, ignoredFieldNames: string[]) => {
   return (
     ignoredFieldNames.includes(field.name) ||
-    field.kind !== 'scalar' ||
+    (field.kind !== 'scalar' && field.kind !== 'enum') ||
     field.isId
   )
 }
@@ -112,7 +125,8 @@ const getZodSchema = (model: DMMF.Model, ignoredFieldNames: string[]) => {
 
   return `
   import { z } from 'zod';
-  import { JsonSchema } from './utils';
+  import * as utils from './utils';
+  import * as enums from './enums';
 
   export const ${model.name}CreateSchema = z.object({
     ${fields}
@@ -133,7 +147,9 @@ const getIndexContent = (models: DMMF.Model[]) => {
         return `export * from './${model.name}Schema'`
       })
       .join('\n') +
+    '\n' +
     `
+    export * from './enums'
     export * from './utils'
     `
   )
@@ -147,5 +163,23 @@ const getUtilsContent = () => {
     export type Literal = z.infer<typeof LiteralSchema>
     export const JsonSchema: z.ZodType = z.lazy(() => z.union([LiteralSchema, z.array(JsonSchema), z.record(JsonSchema)]))
     export type Json = z.infer<typeof JsonSchema>
+  `
+}
+
+const getEnumsContent = (enums: DMMF.DatamodelEnum[]) => {
+  return `
+    import { z } from 'zod'
+
+    ${enums.map(getZodEnum).join('\n')}
+  `
+}
+
+const getZodEnum = (em: DMMF.DatamodelEnum) => {
+  return `
+  export const ${em.name}Enum = z.enum([${em.values.map(
+    (v) => `'${v.name}'`,
+  )}]);
+
+  export type ${em.name} = z.infer<typeof ${em.name}Enum>;
   `
 }
