@@ -1,7 +1,7 @@
 {
   "name": "zod-prisma-crud-types",
   "description": "Provide a description about your generator",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "main": "dist/generator.js",
   "license": "MIT",
   "bin": {

@@ -4,6 +4,10 @@ generator zod_prisma_crud_types {
   ignoredFieldNames = "id, created_at, updated_at"
 }
 
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
