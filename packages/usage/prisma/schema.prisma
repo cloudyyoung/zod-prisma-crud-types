@@ -1,6 +1,7 @@
 generator zod_prisma_crud_types {
-  provider = "node ../../node_modules/zod-prisma-crud-types"
-  output   = "../types/"
+  provider          = "node ../../node_modules/zod-prisma-crud-types"
+  output            = "../types/"
+  ignoredFieldNames = "id, created_at, updated_at"
 }
 
 datasource db {
@@ -12,6 +13,8 @@ model User {
   id                Int              @id @default(autoincrement())
   email             String           @unique
   name              String?
+  created_at        DateTime         @default(now())
+  updated_at        DateTime         @updatedAt
   notification_type NotificationType
 }
 

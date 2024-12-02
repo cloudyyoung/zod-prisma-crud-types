@@ -20,12 +20,18 @@ generatorHandler({
     }
   },
   onGenerate: async (options: GeneratorOptions) => {
+    const config = options.generator.config
+    const ignoredFieldNamesString = config.ignoredFieldNames || ''
+    const ignoredFieldNames = ignoredFieldNamesString
+      .split(',')
+      .map((name) => name.trim())
+
     const promises = options.dmmf.datamodel.models.map((model) => {
       const schemaLocation = path.join(
         options.generator.output?.value!,
         `${model.name}Schema.ts`,
       )
-      const content = getZodSchema(model)
+      const content = getZodSchema(model, ignoredFieldNames)
       return writeFileSafely(schemaLocation, content)
     })
 
@@ -76,26 +82,18 @@ const getZodOptional = (field: DMMF.Field) => {
   return field.isRequired ? '' : '.optional()'
 }
 
-const isIgnoredField = (field: DMMF.Field) => {
-  return (
-    field.name === 'id' ||
-    field.isUpdatedAt ||
-    field.isGenerated ||
-    field.isReadOnly ||
-    field.kind !== 'scalar'
-  )
+const isIgnoredField = (field: DMMF.Field, ignoredFieldNames: string[]) => {
+  return !ignoredFieldNames.includes(field.name)
 }
 
 const getZodField = (field: DMMF.Field) => {
-  if (isIgnoredField(field)) {
-    return undefined
-  }
-
   return `${field.name}: ${getZodFieldType(field)}${getZodOptional(field)}`
 }
 
-const getZodSchema = (model: DMMF.Model) => {
-  const fields = model.fields.map(getZodField).filter(Boolean)
+const getZodSchema = (model: DMMF.Model, ignoredFieldNames: string[]) => {
+  const fields = model.fields
+    .filter((field) => isIgnoredField(field, ignoredFieldNames))
+    .map(getZodField)
 
   return `
   import { z } from 'zod';
