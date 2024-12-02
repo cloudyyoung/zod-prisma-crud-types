@@ -43,6 +43,13 @@ generatorHandler({
     )
     const indexContent = getIndexContent(options.dmmf.datamodel.models)
     await writeFileSafely(indexLocation, indexContent)
+
+    const utilsLocation = path.join(
+      options.generator.output?.value!,
+      `utils.ts`,
+    )
+    const utilsContent = getUtilsContent()
+    await writeFileSafely(utilsLocation, utilsContent)
   },
 })
 
@@ -63,8 +70,8 @@ const getZodFieldType = (field: DMMF.Field) => {
         return 'z.number()'
       case 'Int':
         return 'z.number()'
-      case 'JSON':
-        return 'z.record(z.unknown())'
+      case 'Json':
+        return 'JsonSchema'
       case 'String':
         return 'z.string()'
       default:
@@ -79,24 +86,31 @@ const getZodFieldType = (field: DMMF.Field) => {
 }
 
 const getZodOptional = (field: DMMF.Field) => {
-  return field.isRequired ? '' : '.optional()'
+  return field.isRequired ? '' : '.nullish().optional()'
 }
 
 const isIgnoredField = (field: DMMF.Field, ignoredFieldNames: string[]) => {
-  return !ignoredFieldNames.includes(field.name)
+  return (
+    ignoredFieldNames.includes(field.name) ||
+    field.kind !== 'scalar' ||
+    field.isReadOnly ||
+    field.isId
+  )
 }
 
 const getZodField = (field: DMMF.Field) => {
+  console.log(field)
   return `${field.name}: ${getZodFieldType(field)}${getZodOptional(field)}`
 }
 
 const getZodSchema = (model: DMMF.Model, ignoredFieldNames: string[]) => {
   const fields = model.fields
-    .filter((field) => isIgnoredField(field, ignoredFieldNames))
+    .filter((field) => !isIgnoredField(field, ignoredFieldNames))
     .map(getZodField)
 
   return `
   import { z } from 'zod';
+  import { JsonSchema } from './utils';
 
   export const ${model.name}CreateSchema = z.object({
     ${fields}
@@ -111,9 +125,28 @@ const getZodSchema = (model: DMMF.Model, ignoredFieldNames: string[]) => {
 }
 
 const getIndexContent = (models: DMMF.Model[]) => {
-  return models
-    .map((model) => {
-      return `export * from './${model.name}Schema'`
+  return (
+    models
+      .map((model) => {
+        return `export * from './${model.name}Schema'`
+      })
+      .join('\n') +
+    `
+    export * from './utils'
+    `
+  )
+}
+
+const getUtilsContent = () => {
+  return `
+    import { z } from 'zod';
+
+    export type Json = { [key: string]: Json } | Json[]
+    export const JsonSchema: z.ZodType<Json> = z.lazy(() =>
+      z.union([z.array(JsonSchema), z.record(JsonSchema)]),
+    ).transform((val) => {
+      return val ? JSON.parse(JSON.stringify(val)) : val
     })
-    .join('\n')
+
+  `
 }

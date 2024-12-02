@@ -19,7 +19,7 @@ const { version } = require('../package.json');
         };
     },
     onGenerate: async (options) => {
-        var _a;
+        var _a, _b;
         const config = options.generator.config;
         const ignoredFieldNamesString = config.ignoredFieldNames || '';
         const ignoredFieldNames = ignoredFieldNamesString
@@ -35,6 +35,9 @@ const { version } = require('../package.json');
         const indexLocation = path_1.default.join((_a = options.generator.output) === null || _a === void 0 ? void 0 : _a.value, `index.ts`);
         const indexContent = getIndexContent(options.dmmf.datamodel.models);
         await (0, writeFileSafely_1.writeFileSafely)(indexLocation, indexContent);
+        const utilsLocation = path_1.default.join((_b = options.generator.output) === null || _b === void 0 ? void 0 : _b.value, `utils.ts`);
+        const utilsContent = getUtilsContent();
+        await (0, writeFileSafely_1.writeFileSafely)(utilsLocation, utilsContent);
     },
 });
 const getZodFieldType = (field) => {
@@ -54,8 +57,8 @@ const getZodFieldType = (field) => {
                 return 'z.number()';
             case 'Int':
                 return 'z.number()';
-            case 'JSON':
-                return 'z.record(z.unknown())';
+            case 'Json':
+                return 'JsonSchema';
             case 'String':
                 return 'z.string()';
             default:
@@ -68,20 +71,25 @@ const getZodFieldType = (field) => {
     return getType(field.type);
 };
 const getZodOptional = (field) => {
-    return field.isRequired ? '' : '.optional()';
+    return field.isRequired ? '' : '.nullish().optional()';
 };
 const isIgnoredField = (field, ignoredFieldNames) => {
-    return !ignoredFieldNames.includes(field.name);
+    return (ignoredFieldNames.includes(field.name) ||
+        field.kind !== 'scalar' ||
+        field.isReadOnly ||
+        field.isId);
 };
 const getZodField = (field) => {
+    console.log(field);
     return `${field.name}: ${getZodFieldType(field)}${getZodOptional(field)}`;
 };
 const getZodSchema = (model, ignoredFieldNames) => {
     const fields = model.fields
-        .filter((field) => isIgnoredField(field, ignoredFieldNames))
+        .filter((field) => !isIgnoredField(field, ignoredFieldNames))
         .map(getZodField);
     return `
   import { z } from 'zod';
+  import { JsonSchema } from './utils';
 
   export const ${model.name}CreateSchema = z.object({
     ${fields}
@@ -95,10 +103,26 @@ const getZodSchema = (model, ignoredFieldNames) => {
   `;
 };
 const getIndexContent = (models) => {
-    return models
+    return (models
         .map((model) => {
         return `export * from './${model.name}Schema'`;
     })
-        .join('\n');
+        .join('\n') +
+        `
+    export * from './utils'
+    `);
+};
+const getUtilsContent = () => {
+    return `
+    import { z } from 'zod';
+
+    export type Json = { [key: string]: Json } | Json[]
+    export const JsonSchema: z.ZodType<Json> = z.lazy(() =>
+      z.union([z.array(JsonSchema), z.record(JsonSchema)]),
+    ).transform((val) => {
+      return val ? JSON.parse(JSON.stringify(val)) : val
+    })
+
+  `;
 };
 //# sourceMappingURL=generator.js.map
