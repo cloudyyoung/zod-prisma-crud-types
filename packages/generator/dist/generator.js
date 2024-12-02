@@ -76,11 +76,9 @@ const getZodOptional = (field) => {
 const isIgnoredField = (field, ignoredFieldNames) => {
     return (ignoredFieldNames.includes(field.name) ||
         field.kind !== 'scalar' ||
-        field.isReadOnly ||
         field.isId);
 };
 const getZodField = (field) => {
-    console.log(field);
     return `${field.name}: ${getZodFieldType(field)}${getZodOptional(field)}`;
 };
 const getZodSchema = (model, ignoredFieldNames) => {

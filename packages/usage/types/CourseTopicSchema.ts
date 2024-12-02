@@ -9,6 +9,7 @@ export const CourseTopicCreateSchema = z.object({
   is_repeatable: z.boolean(),
   units: z.number(),
   link: z.string(),
+  course_id: z.string(),
 })
 
 export type CourseTopicCreate = z.infer<typeof CourseTopicCreateSchema>

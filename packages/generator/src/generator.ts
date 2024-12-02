@@ -93,13 +93,11 @@ const isIgnoredField = (field: DMMF.Field, ignoredFieldNames: string[]) => {
   return (
     ignoredFieldNames.includes(field.name) ||
     field.kind !== 'scalar' ||
-    field.isReadOnly ||
     field.isId
   )
 }
 
 const getZodField = (field: DMMF.Field) => {
-  console.log(field)
   return `${field.name}: ${getZodFieldType(field)}${getZodOptional(field)}`
 }
 

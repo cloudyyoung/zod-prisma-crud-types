@@ -5,6 +5,7 @@ export const CourseCreateSchema = z.object({
   cid: z.string(),
   code: z.string(),
   course_number: z.string(),
+  subject_code: z.string(),
   description: z.string(),
   name: z.string(),
   long_name: z.string(),
