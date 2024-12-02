@@ -1,6 +1,6 @@
-generator custom_generator {
+generator zod_prisma_crud_types {
   provider = "node ../../node_modules/zod-prisma-crud-types"
-  output   = "../types"
+  output   = "../types/"
 }
 
 datasource db {
@@ -9,9 +9,10 @@ datasource db {
 }
 
 model User {
-  id    Int     @id @default(autoincrement())
-  email String  @unique
-  name  String?
+  id                Int              @id @default(autoincrement())
+  email             String           @unique
+  name              String?
+  notification_type NotificationType
 }
 
 enum NotificationType {
