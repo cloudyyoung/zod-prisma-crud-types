@@ -1,8 +1,13 @@
 import { z } from 'zod'
 
-export type Json = { [key: string]: Json } | Json[]
-export const JsonSchema: z.ZodType<Json> = z
-  .lazy(() => z.union([z.array(JsonSchema), z.record(JsonSchema)]))
-  .transform((val) => {
-    return val ? JSON.parse(JSON.stringify(val)) : val
-  })
+export const literalSchema = z.union([
+  z.string(),
+  z.number(),
+  z.boolean(),
+  z.null(),
+])
+export type Literal = z.infer<typeof literalSchema>
+export type Json = Literal | { [key: string]: Json } | Json[]
+export const JsonSchema: z.ZodType<Json> = z.lazy(() =>
+  z.union([literalSchema, z.array(JsonSchema), z.record(JsonSchema)]),
+)
