@@ -1,7 +1,7 @@
 import { generatorHandler, GeneratorOptions } from '@prisma/generator-helper'
 import { logger } from '@prisma/sdk'
 import { GENERATOR_NAME } from './constants'
-import { Config, getPrismaConfigArrayValue } from './utils'
+import { Config, emptyFolder, getPrismaConfigArrayValue } from './utils'
 import {
   generateEnums,
   generateIndex,
@@ -13,7 +13,7 @@ const { version } = require('../package.json')
 
 generatorHandler({
   onManifest() {
-    logger.info(`${GENERATOR_NAME}:Registered`)
+    logger.info(`${GENERATOR_NAME}: Registered`)
     return {
       version,
       defaultOutput: '../generated',
@@ -26,6 +26,8 @@ generatorHandler({
       outputFolder: options.generator.output?.value!,
       ignoredFieldNames: getPrismaConfigArrayValue(config, 'ignoredFieldNames'),
     }
+
+    await emptyFolder(cleanConfig.outputFolder)
 
     const models = options.dmmf.datamodel.models
     const enums = options.dmmf.datamodel.enums

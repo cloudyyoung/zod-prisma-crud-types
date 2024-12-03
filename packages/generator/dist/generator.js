@@ -8,7 +8,7 @@ const generators_1 = require("./generators");
 const { version } = require('../package.json');
 (0, generator_helper_1.generatorHandler)({
     onManifest() {
-        sdk_1.logger.info(`${constants_1.GENERATOR_NAME}:Registered`);
+        sdk_1.logger.info(`${constants_1.GENERATOR_NAME}: Registered`);
         return {
             version,
             defaultOutput: '../generated',
@@ -22,6 +22,7 @@ const { version } = require('../package.json');
             outputFolder: (_a = options.generator.output) === null || _a === void 0 ? void 0 : _a.value,
             ignoredFieldNames: (0, utils_1.getPrismaConfigArrayValue)(config, 'ignoredFieldNames'),
         };
+        await (0, utils_1.emptyFolder)(cleanConfig.outputFolder);
         const models = options.dmmf.datamodel.models;
         const enums = options.dmmf.datamodel.enums;
         await Promise.all([
