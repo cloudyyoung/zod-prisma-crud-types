@@ -1,4 +1,4 @@
-generator zod_prisma_crud_types {
+generator zod {
   provider          = "node ../../node_modules/zod-prisma-crud-types"
   output            = "../types/"
   ignoredFieldNames = "id, created_at, updated_at"

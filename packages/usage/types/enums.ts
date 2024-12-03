@@ -9,7 +9,6 @@ export const NotificationTypeEnum = z.enum([
   'heartOnComment',
   'heartOnReply',
 ])
-
 export type NotificationType = z.infer<typeof NotificationTypeEnum>
 
 export const LanguageEnum = z.enum([
@@ -20,7 +19,6 @@ export const LanguageEnum = z.enum([
   'Python',
   'Cpp',
 ])
-
 export type Language = z.infer<typeof LanguageEnum>
 
 export const CourseComponentEnum = z.enum([
@@ -31,7 +29,6 @@ export const CourseComponentEnum = z.enum([
   'SUPERVISED_STUDY',
   'TUTORIAL',
 ])
-
 export type CourseComponent = z.infer<typeof CourseComponentEnum>
 
 export const CareerEnum = z.enum([
@@ -39,13 +36,10 @@ export const CareerEnum = z.enum([
   'GRADUATE_PROGRAM',
   'MEDICINE_PROGRAM',
 ])
-
 export type Career = z.infer<typeof CareerEnum>
 
 export const GradeModeEnum = z.enum(['CDF', 'CNC', 'CRF', 'ELG', 'GRD', 'MTG'])
-
 export type GradeMode = z.infer<typeof GradeModeEnum>
 
 export const TermNameEnum = z.enum(['WINTER', 'SPRING', 'SUMMER', 'FALL'])
-
 export type TermName = z.infer<typeof TermNameEnum>
