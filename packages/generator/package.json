@@ -1,7 +1,7 @@
 {
   "name": "zod-prisma-crud-types",
   "description": "Zod schema generator on Prisma for Restful CRUD operations",
-  "version": "1.0.10",
+  "version": "1.0.11",
   "main": "dist/generator.js",
   "license": "MIT",
   "bin": {
