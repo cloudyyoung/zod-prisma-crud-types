@@ -13,7 +13,6 @@ const generateIndex = async (config) => {
       export * from './utils'
     `;
     const filePath = path_1.default.join(config.outputFolder, `index.ts`);
-    console.log(filePath);
     await (0, utils_1.writeFileSafely)(filePath, content);
 };
 exports.generateIndex = generateIndex;
