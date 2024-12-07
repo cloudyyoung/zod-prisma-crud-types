@@ -11,8 +11,16 @@ export const getZodSchema = (
     .filter((field) => !isIgnoredField(field, ignoredFieldNames))
     .map(getZodField)
 
-  const { nameCreateSchema, nameCreate, nameUpdateSchema, nameUpdate } =
-    getModelNames(model)
+  const {
+    nameCreateSchema,
+    nameCreate,
+    nameUpdateSchema,
+    nameUpdate,
+    nameReadSchema,
+    nameRead,
+    nameDeleteSchema,
+    nameDelete,
+  } = getModelNames(model)
 
   const content = `
     export const ${nameCreateSchema} = z.object({
@@ -24,6 +32,18 @@ export const getZodSchema = (
     export const ${nameUpdateSchema} = ${nameCreateSchema}.partial();
 
     export type ${nameUpdate} = z.infer<typeof ${nameUpdateSchema}>;
+
+    export const ${nameReadSchema} = z.object({
+      id: z.string(),
+    });
+
+    export type ${nameRead} = z.infer<typeof ${nameReadSchema}>;
+
+    export const ${nameDeleteSchema} = z.object({
+      id: z.string(),
+    });
+
+    export type ${nameDelete} = z.infer<typeof ${nameDeleteSchema}>;
   `
   return content
 }
