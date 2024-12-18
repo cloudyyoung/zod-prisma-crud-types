@@ -1,4 +1,4 @@
-import { DMMF } from "@prisma/generator-helper"
+import { DMMF } from '@prisma/generator-helper'
 
 export const getZodFieldType = (field: DMMF.Field) => {
   const getType = (type: string) => {
@@ -10,7 +10,7 @@ export const getZodFieldType = (field: DMMF.Field) => {
       case 'Bytes':
         return 'z.string()'
       case 'DateTime':
-        return 'z.date()'
+        return 'z.coerce.date()'
       case 'Decimal':
         return 'z.number()'
       case 'Float':
