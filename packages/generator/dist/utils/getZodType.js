@@ -11,7 +11,7 @@ const getZodFieldType = (field) => {
             case 'Bytes':
                 return 'z.string()';
             case 'DateTime':
-                return 'z.date()';
+                return 'z.coerce.date()';
             case 'Decimal':
                 return 'z.number()';
             case 'Float':

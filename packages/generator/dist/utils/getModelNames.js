@@ -8,6 +8,10 @@ const getModelNames = (model) => {
     const nameCreate = `${model.name}Create`;
     const nameUpdateSchema = `${model.name}UpdateSchema`;
     const nameUpdate = `${model.name}Update`;
+    const nameReadSchema = `${model.name}ReadSchema`;
+    const nameRead = `${model.name}Read`;
+    const nameDeleteSchema = `${model.name}DeleteSchema`;
+    const nameDelete = `${model.name}Delete`;
     return {
         nameSchema,
         name,
@@ -15,6 +19,10 @@ const getModelNames = (model) => {
         nameCreate,
         nameUpdateSchema,
         nameUpdate,
+        nameReadSchema,
+        nameRead,
+        nameDeleteSchema,
+        nameDelete,
     };
 };
 exports.getModelNames = getModelNames;
